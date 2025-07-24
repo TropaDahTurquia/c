@@ -1,66 +1,68 @@
 const bcrypt = require('bcryptjs');
-const fs = require('fs-extra');
-const path = require('path');
+const { v4: uuidv4 } = require('uuid');
 
-const USERS_FILE = path.join(process.cwd(), 'users.json');
-const SESSIONS_FILE = path.join(process.cwd(), 'sessions.json');
-
-// Carrega ou cria arquivo de usuários
-async function loadUsers() {
-  try {
-    return await fs.readJson(USERS_FILE);
-  } catch (e) {
-    const defaultUsers = {
-      admin: {
-        password: bcrypt.hashSync('admin123', 10),
-        role: 'admin'
-      },
-      user1: {
-        password: bcrypt.hashSync('tropa123', 10),
-        role: 'user'
-      }
-    };
-    await fs.writeJson(USERS_FILE, defaultUsers);
-    return defaultUsers;
-  }
-}
+// Dados em memória (persistem apenas durante a execução da função)
+let sessions = {};
 
 exports.handler = async (event, context) => {
   const { action, username, password, token } = JSON.parse(event.body);
-  
+
   try {
-    const users = await loadUsers();
-    
+    // Verifica credenciais
+    const validateCredentials = (username, password) => {
+      if (username === 'admin' && bcrypt.compareSync(password, process.env.ADMIN_PASSWORD_HASH)) {
+        return { role: 'admin' };
+      }
+      if (username === 'user' && bcrypt.compareSync(password, process.env.USER_PASSWORD_HASH)) {
+        return { role: 'user' };
+      }
+      return null;
+    };
+
     // Login
     if (action === 'login') {
-      const user = users[username];
-      if (!user || !bcrypt.compareSync(password, user.password)) {
+      const user = validateCredentials(username, password);
+      if (!user) {
         return { statusCode: 401, body: JSON.stringify({ error: 'Credenciais inválidas' }) };
       }
-      
-      // Cria sessão
-      const sessionToken = require('uuid').v4();
-      const sessions = await fs.readJson(SESSIONS_FILE).catch(() => ({}));
-      sessions[sessionToken] = { username, role: user.role, expires: Date.now() + 3600000 };
-      await fs.writeJson(SESSIONS_FILE, sessions);
-      
-      return { statusCode: 200, body: JSON.stringify({ token: sessionToken, role: user.role }) };
+
+      const sessionToken = uuidv4();
+      sessions[sessionToken] = {
+        username,
+        role: user.role,
+        expires: Date.now() + 3600000 // 1 hora
+      };
+
+      return { 
+        statusCode: 200, 
+        body: JSON.stringify({ 
+          token: sessionToken, 
+          role: user.role 
+        }) 
+      };
     }
-    
+
     // Verifica sessão
     if (action === 'check') {
-      const sessions = await fs.readJson(SESSIONS_FILE).catch(() => ({}));
       const session = sessions[token];
-      
-      if (!session || session.expires < Date.now()) {
-        return { statusCode: 401, body: JSON.stringify({ valid: false }) };
-      }
-      
-      return { statusCode: 200, body: JSON.stringify({ valid: true, role: session.role }) };
+      const isValid = session && session.expires > Date.now();
+
+      return { 
+        statusCode: 200, 
+        body: JSON.stringify({ 
+          valid: isValid,
+          role: isValid ? session.role : null
+        }) 
+      };
     }
-    
+
     return { statusCode: 400, body: JSON.stringify({ error: 'Ação inválida' }) };
   } catch (error) {
-    return { statusCode: 500, body: JSON.stringify({ error: error.message }) };
+    return { 
+      statusCode: 500, 
+      body: JSON.stringify({ 
+        error: error.message 
+      }) 
+    };
   }
 };

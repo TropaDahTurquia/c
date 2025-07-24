@@ -1,14 +1,10 @@
-const fs = require('fs-extra');
-const path = require('path');
-
-const MESSAGES_FILE = path.join(process.cwd(), 'messages.json');
+// Armazenamento em memória (perdido entre execuções)
+let messages = [];
 
 exports.handler = async (event, context) => {
   const { action, message, username } = JSON.parse(event.body);
-  
+
   try {
-    let messages = await fs.readJson(MESSAGES_FILE).catch(() => []);
-    
     if (action === 'send') {
       messages.push({
         id: Date.now(),
@@ -16,16 +12,31 @@ exports.handler = async (event, context) => {
         message,
         timestamp: new Date().toISOString()
       });
-      await fs.writeJson(MESSAGES_FILE, messages);
+
+      // Limita histórico para evitar consumo excessivo de memória
+      if (messages.length > 100) {
+        messages = messages.slice(-50);
+      }
+
       return { statusCode: 200, body: JSON.stringify({ success: true }) };
     }
-    
+
     if (action === 'get') {
-      return { statusCode: 200, body: JSON.stringify({ messages }) };
+      return { 
+        statusCode: 200, 
+        body: JSON.stringify({ 
+          messages: messages.slice(-50) // Retorna apenas as últimas 50 mensagens
+        }) 
+      };
     }
-    
+
     return { statusCode: 400, body: JSON.stringify({ error: 'Ação inválida' }) };
   } catch (error) {
-    return { statusCode: 500, body: JSON.stringify({ error: error.message }) };
+    return { 
+      statusCode: 500, 
+      body: JSON.stringify({ 
+        error: error.message 
+      }) 
+    };
   }
 };
