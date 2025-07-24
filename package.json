@@ -1,0 +1,21 @@
+{
+  "name": "tropa-turquia-chat",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "axios": "^1.11.0",
+    "bcryptjs": "^3.0.2",
+    "express": "^5.1.0",
+    "express-basic-auth": "^1.2.1",
+    "fs-extra": "^11.3.0",
+    "netlify-lambda": "^0.4.0",
+    "uuid": "^11.1.0"
+  }
+}

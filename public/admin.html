@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tropa da Turquia - Admin</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <h1>Tropa da Turquia - Painel Admin</h1>
+      <div id="user-info"></div>
+    </header>
+    
+    <div id="login-container" class="login-container">
+      <h2>Login Admin</h2>
+      <form id="login-form">
+        <input type="text" id="username" placeholder="Usuário" required>
+        <input type="password" id="password" placeholder="Senha" required>
+        <button type="submit">Entrar</button>
+      </form>
+    </div>
+    
+    <div id="admin-container" class="admin-container hidden">
+      <div class="admin-section">
+        <h2>Usuários</h2>
+        <form id="add-user-form">
+          <input type="text" id="new-username" placeholder="Novo usuário" required>
+          <input type="password" id="new-password" placeholder="Senha" required>
+          <button type="submit">Adicionar</button>
+        </form>
+        
+        <div id="users-list" class="users-list"></div>
+      </div>
+      
+      <div class="admin-section">
+        <h2>Mensagens</h2>
+        <button id="refresh-messages">Atualizar</button>
+        <div id="messages-list" class="messages-list"></div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="src/auth.js"></script>
+  <script src="src/admin.js"></script>
+</body>
+</html>
