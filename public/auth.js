@@ -23,6 +23,38 @@ async function login(username, password) {
   }
 }
 
+// Nova função login aprimorada
+async function login(username, password) {
+  if (!username || !password) {
+    alert('Por favor, preencha todos os campos');
+    return null;
+  }
+
+  try {
+    const response = await fetch('/.netlify/functions/auth', {
+      method: 'POST',
+      body: JSON.stringify({ 
+        action: 'login', 
+        username: username.trim(), 
+        password: password.trim() 
+      }),
+      headers: { 'Content-Type': 'application/json' }
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error || 'Erro no login');
+    }
+    
+    return data;
+  } catch (error) {
+    alert(error.message);
+    console.error('Login error:', error);
+    return null;
+  }
+}
+
 // Verifica se já está logado
 async function checkAuth() {
   const token = localStorage.getItem('chatToken');
