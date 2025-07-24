@@ -1,13 +1,13 @@
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 
-// Configuração de usuários (melhor prática: usar variáveis de ambiente)
+// Configuração de usuários (apenas números)
 const USERS = {
-  admin: {
+  "1": {
     passwordHash: process.env.ADMIN_PASSWORD_HASH,
     role: 'admin'
   },
-  user: {
+  "2": {
     passwordHash: process.env.USER_PASSWORD_HASH,
     role: 'user'
   }

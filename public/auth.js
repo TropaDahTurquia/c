@@ -98,3 +98,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     startChat();
   }
 });
+
+// No HTML, garanta que o placeholder oriente para números, se desejar.
+// Nenhuma alteração de lógica JS necessária para aceitar números como usuário/senha.
